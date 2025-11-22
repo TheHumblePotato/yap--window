@@ -1,25 +1,28 @@
-name: AI Request
+name: AI Response with Fallback
 
 on:
-  workflow_dispatch:  # this allows you to trigger it manually
+  repository_dispatch:
+    types: [ask-ai]
 
 jobs:
-  call_ai:
+  generate:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Call Gemini API
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run AI script
+        run: node scripts/ask-ai.js "${{ github.event.client_payload.prompt }}"
         env:
           GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
-          PROMPT: "Hello from GitHub Actions!"
-        run: |
-          echo "Calling Gemini API..."
-          response=$(curl -s -X POST https://api.gemini.com/v1/generate \
-            -H "Authorization: Bearer $GEMINI_API_KEY_1" \
-            -H "Content-Type: application/json" \
-            -d "{\"model\": \"gemini-2.5-flash\", \"prompt\": \"$PROMPT\"}")
-          echo "Response: $response"
+          GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
