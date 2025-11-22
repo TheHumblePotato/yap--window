@@ -119,9 +119,9 @@
 
       #chat-screen {
         flex-direction: column;
-        margin-top: 40px;
         padding-top: 0;
-        height: calc(100% - 40px);
+        height: calc(100% - 10px);
+        margin-bottom: 10px;
       }
 
       #lower-chat {
@@ -435,6 +435,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        margin-right: 10px;
       }
 
       #message-input {
