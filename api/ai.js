@@ -1,4 +1,4 @@
-import fetch from "node-fetch"; // Needed for Vercel serverless
+import fetch from "node-fetch"; // for Vercel
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -6,28 +6,53 @@ export default async function handler(req, res) {
   }
 
   const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: "Missing prompt" });
 
-  if (!prompt) {
-    return res.status(400).json({ error: "Missing prompt" });
+  const API_KEYS = [
+    process.env.GEMINI_API_KEY_1,
+    process.env.GEMINI_API_KEY_2,
+  ];
+
+  let data = null;
+  let lastError = null;
+
+  for (let i = 0; i < API_KEYS.length; i++) {
+    const key = API_KEYS[i];
+    try {
+      const response = await fetch("https://api.gemini.com/v1beta/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: "gemini-2.5-flash",
+          prompt,
+        }),
+      });
+
+      const json = await response.json();
+
+      // check if we got a usable output
+      if (json && json.output) {
+        data = json;
+        break; // stop rotating once successful
+      } else {
+        lastError = json;
+      }
+    } catch (error) {
+      console.error(`Error with API key ${key}:`, error);
+      lastError = error;
+    }
   }
 
-  try {
-    const response = await fetch("https://api.gemini.com/v1/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GEMINI_API_KEY}`, // secure key
-      },
-      body: JSON.stringify({
-        model: "gemini-2.5-flash",
-        prompt: prompt,
-      }),
+  if (!data) {
+    // all keys failed
+    return res.status(500).json({
+      error: "All Gemini API requests failed",
+      details: lastError,
     });
-
-    const data = await response.json();
-    res.status(200).json(data);
-  } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    res.status(500).json({ error: "Internal server error" });
   }
+
+  res.status(200).json(data);
 }
