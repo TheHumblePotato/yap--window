@@ -3180,16 +3180,6 @@
           Date: d,
         });
 
-        const API_KEYS = [
-          "AIzaSyDJEIVUqeVkrbtMPnBvB8QWd9VuUQQQBjg",
-          "AIzaSyB42CD-hXRnfq3eNpLWnF9at5kHePI5qgQ",
-          "AIzaSyAzipn1IBvbNyQUiiJq6cAkE6hAlShce94",
-          "AIzaSyC1fFINANR_tuOM18Lo3HF9WXosX-6BHLM",
-          "AIzaSyAT94ASgr96OQuR9GjVxpS1pee5o5CZ6H0",
-          "AIzaSyBkR_XbsH9F-eWarriJ8Vc1KqmjEWhh7-s",
-          "AIzaSyCJeCvi3Br0gPVH0ccL279wSkAEjOdlnx4",
-        ];
-
         const chatHistory = messageEntries
           .map(([id, msg]) => {
             return `${msg.User}: ${msg.Message.substring(0, 500)}`;
@@ -3214,44 +3204,42 @@
         3b. No users are related to any other users in a familial or romantic way.
 
         Now, respond to the user's question naturally:
-        User: ${email} asks: ${noFilesMessage}
+        User: ${email} asks: ${question}
 
         Make sure to follow all the instructions while answering questions.
         `;
 
+        // ---------------- Mock AI section ----------------
         let aiReply = null;
-        let successfulRequest = false;
 
-        for (const API_KEY of API_KEYS) {
-          try {
-            const response = await fetch(
-              "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" +
-                API_KEY,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
-                }),
-              },
-            ).then((res) => res.json());
-
-            const responseText =
-              response.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (responseText && responseText.trim() !== "") {
-              aiReply = responseText;
-              successfulRequest = true;
-              break;
-            }
-          } catch (error) {
-            console.error(`Error with API key ${API_KEY}:`, error);
-          }
+        try {
+          // Mock AI response for testing before Vercel is ready
+          aiReply = `[AI] This is a mock reply to your question: "${question}"`;
+  
+          // Optional: Add some fake delay to simulate real AI response
+          await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 500));
+  
+        } catch (err) {
+          console.error("Error sending message to AI (mock):", err);
+          aiReply = "Sorry, AI assistance is temporarily unavailable. Please try again later.";
         }
+        // ---------------- End Mock AI ----------------
 
-        if (!successfulRequest) {
-          aiReply =
-            "Sorry, AI assistance is temporarily unavailable. Please try again later.";
-        }
+        /* let aiReply = null;
+
+        try {
+          const res = await fetch("https://your-vercel-url.vercel.app/api/ai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: fullPrompt }),
+          });
+
+          const data = await res.json();
+          aiReply = data.output || "Sorry, AI assistance is temporarily unavailable. Please try again later.";
+        } catch (err) {
+          console.error("Error sending message to AI:", err);
+          aiReply = "Sorry, AI assistance is temporarily unavailable. Please try again later.";
+        } */
 
         const aiMessageRef = push(messagesRef);
         await update(aiMessageRef, {
