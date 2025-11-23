@@ -3181,10 +3181,6 @@
           Message: "thinking...",
           Date: Date.now(),
         });
-        if (msg.User === "[AI:thinking]") {
-          // gray subtle "thinking..." bubble
-          bubble.classList.add("ai-thinking");
-        }
 
         const messagesSnapshot = await get(messagesRef);
         const messages = messagesSnapshot.val() || {};
@@ -3243,10 +3239,6 @@
           Message: "typing...",
           Date: Date.now(),
         });
-        if (msg.User === "[AI:typing]") {
-          // animated typing bubble
-          bubble.classList.add("ai-typing");
-        }
           
         // tiny delay to feel natural (optional)
         await new Promise((r) => setTimeout(r, 200));
