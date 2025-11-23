@@ -3167,18 +3167,30 @@
         let d = Date.now();
         const question = message.substring(4).trim();
 
-        const messagesSnapshot = await get(messagesRef);
-        const messages = messagesSnapshot.val() || {};
-        const messageEntries = Object.entries(messages)
-          .sort((a, b) => new Date(a[1].Date) - new Date(b[1].Date))
-          .slice(-20);
-
         const userMessageRef = push(messagesRef);
         await update(userMessageRef, {
           User: email,
           Message: message,
           Date: d,
         });
+
+        // Show "thinking..." bubble immediately
+        const thinkingRef = push(messagesRef);
+        await update(thinkingRef, {
+          User: "[AI:thinking]",
+          Message: "thinking...",
+          Date: Date.now(),
+        });
+        if (msg.User === "[AI:thinking]") {
+          // gray subtle "thinking..." bubble
+          bubble.classList.add("ai-thinking");
+        }
+
+        const messagesSnapshot = await get(messagesRef);
+        const messages = messagesSnapshot.val() || {};
+        const messageEntries = Object.entries(messages)
+          .sort((a, b) => new Date(a[1].Date) - new Date(b[1].Date))
+          .slice(-20);
 
         const chatHistory = messageEntries
           .map(([id, msg]) => {
@@ -3209,26 +3221,10 @@
         Make sure to follow all the instructions while answering questions.
         `;
 
-        // ---------------- Mock AI section ----------------
         let aiReply = null;
 
         try {
-          // Mock AI response for testing before Vercel is ready
-          aiReply = `[AI] This is a mock reply to your question: "${question}"`;
-  
-          // Optional: Add some fake delay to simulate real AI response
-          await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 500));
-  
-        } catch (err) {
-          console.error("Error sending message to AI (mock):", err);
-          aiReply = "Sorry, AI assistance is temporarily unavailable. Please try again later.";
-        }
-        // ---------------- End Mock AI ----------------
-
-        /* let aiReply = null;
-
-        try {
-          const res = await fetch("https://yap-window.vercel.app/api/ai", {
+          const res = await fetch("https://yap-ai.shuweny30.workers.dev/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ prompt: fullPrompt }),
@@ -3239,8 +3235,24 @@
         } catch (err) {
           console.error("Error sending message to AI:", err);
           aiReply = "Sorry, AI assistance is temporarily unavailable. Please try again later.";
-        } */
-
+        }
+        
+        // Replace the "thinking..." bubble with "typing..." bubble
+        await update(thinkingRef, {
+          User: "[AI:typing]",
+          Message: "typing...",
+          Date: Date.now(),
+        });
+        if (msg.User === "[AI:typing]") {
+          // animated typing bubble
+          bubble.classList.add("ai-typing");
+        }
+          
+        // tiny delay to feel natural (optional)
+        await new Promise((r) => setTimeout(r, 200));
+  
+        await set(thinkingRef, null);
+        
         const aiMessageRef = push(messagesRef);
         await update(aiMessageRef, {
           User: "[AI]",
