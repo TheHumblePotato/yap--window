@@ -6,7 +6,7 @@
   let pendingFormOptions = null;
   let isSending = false;
   const BOT_USERS = {
-    AI: "[AI]",
+    // AI: "[AI]",
     RNG: "[RNG]",
     EOD: "[EOD]",
     SNAKE: "[Snake Game]",
@@ -14,7 +14,7 @@
     ARCHFIEND: "[Archfiend Dice]",
     TIGGY: "[Tiggy]",
     TIGGYBOT: "[Tiggy Bot]",
-    JIMMY: "[Jimmy Bot]",
+    // JIMMY: "[Jimmy Bot]",
     SHELL: "[Shell]",
     HELP: "[HELP]",
   };
