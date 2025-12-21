@@ -2745,7 +2745,7 @@
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
     if (message) {
-      // Check which option is selected in the dropdown
+      /* // Check which option is selected in the dropdown
       const gDropdown = document.getElementById("g-dropdown");
       const selectedOption = gDropdown.querySelector(
         ".dropdown-option.selected",
@@ -2754,7 +2754,7 @@
         ? selectedOption.dataset.value
         : "off";
 
-      /* if (selectedValue === "on" && message.trim().charAt(0) != "/") {
+      if (selectedValue === "on" && message.trim().charAt(0) != "/") {
         // Use the AI to process the message with grammar correction
         let d = Date.now();
 
